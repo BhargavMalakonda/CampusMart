@@ -1,0 +1,370 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CampusMart — Trade Smarter on Campus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen" class="auth-screen">
+  <div class="auth-left">
+    <div class="auth-brand">
+      <div class="brand-mark">CM</div>
+      <span class="brand-name">CampusMart</span>
+    </div>
+    <div class="auth-hero">
+      <h1 class="auth-headline">Buy. Sell.<br><em>Negotiate.</em></h1>
+      <p class="auth-desc">The AI-powered campus marketplace where every deal is fair. Built exclusively for students and faculty.</p>
+      <div class="auth-stats">
+        <div class="auth-stat"><span class="stat-n">2.4k+</span><span class="stat-l">Students</span></div>
+        <div class="auth-stat-div"></div>
+        <div class="auth-stat"><span class="stat-n">8.1k+</span><span class="stat-l">Items Sold</span></div>
+        <div class="auth-stat-div"></div>
+        <div class="auth-stat"><span class="stat-n">₹12L+</span><span class="stat-l">Saved</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="auth-right">
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Sign In</button>
+        <button class="auth-tab" id="tab-signup" onclick="switchTab('signup')">Create Account</button>
+      </div>
+      <div id="login-panel">
+        <div class="form-field">
+          <label>College Email</label>
+          <input type="email" id="l-email" placeholder="yourname@university.edu" value="alex@university.edu">
+        </div>
+        <div class="form-field">
+          <label>Password</label>
+          <input type="password" id="l-pass" placeholder="••••••••" value="password123">
+        </div>
+        <button class="btn-primary full" onclick="doLogin()">Sign In →</button>
+        <p class="auth-note">Demo: any .edu email works</p>
+      </div>
+      <div id="signup-panel" style="display:none">
+        <div class="form-row-2">
+          <div class="form-field"><label>First Name</label><input type="text" id="s-fname" placeholder="Alex"></div>
+          <div class="form-field"><label>Last Name</label><input type="text" id="s-lname" placeholder="Kumar"></div>
+        </div>
+        <div class="form-field">
+          <label>College Email</label>
+          <input type="email" id="s-email" placeholder="yourname@university.edu">
+        </div>
+        <div class="form-field">
+          <label>Department</label>
+          <select id="s-dept">
+            <option value="">Select department</option>
+            <option>Computer Science</option><option>Mechanical Engineering</option>
+            <option>Business Administration</option><option>Physics</option>
+            <option>Mathematics</option><option>Chemistry</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Password</label>
+          <input type="password" id="s-pass" placeholder="Create password (min 8 chars)">
+        </div>
+        <button class="btn-primary full" onclick="doSignup()">Create Account →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none">
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-inner">
+      <div class="nav-brand">
+        <div class="brand-mark sm">CM</div>
+        <span class="brand-name">CampusMart</span>
+      </div>
+      <div class="nav-search">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" placeholder="Search products, categories..." id="search-input" oninput="handleSearch()">
+      </div>
+      <div class="nav-actions">
+        <button class="nav-btn" onclick="showView('browse')" id="nav-browse">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Browse
+        </button>
+        <button class="nav-btn" onclick="showView('seller')" id="nav-seller">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Seller Hub
+        </button>
+        <button class="nav-btn" onclick="showView('activity')" id="nav-activity">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          Activity
+        </button>
+        <div class="nav-divider"></div>
+        <div class="user-chip" onclick="toggleUserMenu()">
+          <div class="user-avatar" id="nav-ava">A</div>
+          <span id="nav-username">Alex</span>
+          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <div class="user-menu" id="user-menu">
+          <div class="um-profile">
+            <div class="user-avatar lg" id="um-ava">A</div>
+            <div><div id="um-name" style="font-weight:600;font-size:14px">Alex Kumar</div><div id="um-email" style="font-size:12px;color:var(--muted)">alex@university.edu</div></div>
+          </div>
+          <div class="um-divider"></div>
+          <button class="um-item" onclick="showView('seller')">Seller Dashboard</button>
+          <button class="um-item" onclick="showView('activity')">My Activity</button>
+          <div class="um-divider"></div>
+          <button class="um-item danger" onclick="doLogout()">Sign Out</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- BROWSE VIEW -->
+  <div id="view-browse" class="view active">
+    <div class="browse-header">
+      <div class="bh-inner">
+        <div>
+          <h2 class="view-title">Marketplace</h2>
+          <p class="view-sub">Discover great deals from your campus community</p>
+        </div>
+        <button class="btn-primary" onclick="openAddProduct()">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          List Item
+        </button>
+      </div>
+      <div class="filter-strip">
+        <div class="filter-pills" id="cat-pills">
+          <button class="pill active" onclick="setFilter('all',this)">All Items</button>
+          <button class="pill" onclick="setFilter('Books',this)">📚 Books</button>
+          <button class="pill" onclick="setFilter('Electronics',this)">💻 Electronics</button>
+          <button class="pill" onclick="setFilter('Stationery',this)">✏️ Stationery</button>
+          <button class="pill" onclick="setFilter('Clothing',this)">👕 Clothing</button>
+          <button class="pill" onclick="setFilter('Tickets',this)">🎟 Tickets</button>
+          <button class="pill" onclick="setFilter('Skincare',this)">🧴 Skincare</button>
+          <button class="pill" onclick="setFilter('Projects',this)">🔬 Projects</button>
+        </div>
+        <div class="sort-controls">
+          <select class="sort-select" onchange="handleSort(this.value)">
+            <option value="latest">Latest First</option>
+            <option value="price-asc">Price: Low → High</option>
+            <option value="price-desc">Price: High → Low</option>
+            <option value="demand">Most Demanded</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="products-grid" id="products-grid"></div>
+    <div class="empty-state" id="empty-state" style="display:none">
+      <div class="es-icon">🔍</div>
+      <h3>No items found</h3>
+      <p>Try a different category or search term</p>
+    </div>
+  </div>
+
+  <!-- SELLER VIEW -->
+  <div id="view-seller" class="view">
+    <div class="view-header">
+      <div>
+        <h2 class="view-title">Seller Hub</h2>
+        <p class="view-sub">Manage your listings and track buyer negotiations</p>
+      </div>
+      <button class="btn-primary" onclick="openAddProduct()">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Add Product
+      </button>
+    </div>
+    <div class="stats-row" id="seller-stats"></div>
+    <div class="seller-grid">
+      <div class="seller-main">
+        <div class="section-head">
+          <h3 class="section-title">Your Listings</h3>
+          <span class="section-count" id="listing-count">0 items</span>
+        </div>
+        <div id="seller-listings"></div>
+      </div>
+      <div class="seller-side">
+        <div class="section-head"><h3 class="section-title">AI Insights</h3></div>
+        <div class="ai-insights-panel" id="ai-insights">
+          <div class="ai-insight-empty">
+            <div style="font-size:28px;margin-bottom:8px">🤖</div>
+            <p style="font-size:13px;color:var(--muted)">Add products to see AI pricing insights</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIVITY VIEW -->
+  <div id="view-activity" class="view">
+    <div class="view-header">
+      <div>
+        <h2 class="view-title">My Activity</h2>
+        <p class="view-sub">Track your negotiations and completed deals</p>
+      </div>
+    </div>
+    <div id="activity-content"></div>
+  </div>
+
+</div>
+
+<!-- ══ MODALS ══ -->
+
+<!-- Product Detail Modal -->
+<div class="modal-backdrop" id="md-product" onclick="closeMd('md-product')">
+  <div class="modal lg" onclick="event.stopPropagation()">
+    <button class="md-close" onclick="closeMd('md-product')">×</button>
+    <div id="md-product-body"></div>
+  </div>
+</div>
+
+<!-- Negotiation Chat Modal -->
+<div class="modal-backdrop" id="md-chat" onclick="closeMd('md-chat')">
+  <div class="modal chat-modal" onclick="event.stopPropagation()">
+    <div class="chat-modal-header">
+      <div class="cmh-left">
+        <div class="cmh-icon" id="cm-icon">📚</div>
+        <div>
+          <div class="cmh-title" id="cm-title">Negotiation</div>
+          <div class="cmh-sub" id="cm-sub">AI-powered bargaining</div>
+        </div>
+      </div>
+      <button class="md-close" onclick="closeMd('md-chat')">×</button>
+    </div>
+    <div class="chat-price-bar" id="cm-price-bar"></div>
+    <div class="chat-messages" id="chat-msgs"></div>
+    <div class="chat-quick-offers" id="chat-quick"></div>
+    <div class="chat-input-area" id="chat-input-area">
+      <input type="text" id="chat-inp" placeholder="Type your offer e.g. ₹450…" onkeydown="if(event.key==='Enter')submitChatMsg()">
+      <button class="chat-send-btn" onclick="submitChatMsg()">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Final Chat Modal -->
+<div class="modal-backdrop" id="md-finalchat" onclick="closeMd('md-finalchat')">
+  <div class="modal chat-modal" onclick="event.stopPropagation()">
+    <div class="chat-modal-header">
+      <div class="cmh-left">
+        <div class="cmh-icon" id="fc-icon">💬</div>
+        <div>
+          <div class="cmh-title" id="fc-title">Final Chat</div>
+          <div class="cmh-sub" style="color:var(--green)">Deal locked · Coordinate pickup</div>
+        </div>
+      </div>
+      <button class="md-close" onclick="closeMd('md-finalchat')">×</button>
+    </div>
+    <div class="deal-locked-bar" id="fc-deal-bar"></div>
+    <div class="chat-messages" id="fc-msgs"></div>
+    <div class="chat-input-area">
+      <input type="text" id="fc-inp" placeholder="e.g. I can pick up tomorrow at 5pm…" onkeydown="if(event.key==='Enter')submitFinalMsg()">
+      <button class="chat-send-btn" onclick="submitFinalMsg()">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Product Modal -->
+<div class="modal-backdrop" id="md-addproduct" onclick="closeMd('md-addproduct')">
+  <div class="modal lg" onclick="event.stopPropagation()">
+    <button class="md-close" onclick="closeMd('md-addproduct')">×</button>
+    <div class="md-header">
+      <h2 class="md-title">List a New Product</h2>
+      <p class="md-sub">Fill in the details — our AI will suggest the best pricing strategy</p>
+    </div>
+    <div class="add-product-layout">
+      <div class="ap-form">
+        <div class="form-row-2">
+          <div class="form-field"><label>Product Name *</label><input type="text" id="ap-name" placeholder="e.g. Engineering Textbook Vol 3"></div>
+          <div class="form-field"><label>Category *</label>
+            <select id="ap-cat" onchange="updateAiSuggestion()">
+              <option value="Books">📚 Books</option>
+              <option value="Electronics">💻 Electronics</option>
+              <option value="Stationery">✏️ Stationery</option>
+              <option value="Clothing">👕 Clothing</option>
+              <option value="Tickets">🎟 Tickets</option>
+              <option value="Skincare">🧴 Skincare</option>
+              <option value="Projects">🔬 Projects</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row-2">
+          <div class="form-field"><label>Your Base Price (₹) *</label><input type="number" id="ap-price" placeholder="500" oninput="updateAiSuggestion()"></div>
+          <div class="form-field"><label>Original / MRP (₹)</label><input type="number" id="ap-mrp" placeholder="1200" oninput="updateAiSuggestion()"></div>
+        </div>
+        <div class="form-row-2">
+          <div class="form-field">
+            <label>Condition</label>
+            <select id="ap-condition">
+              <option value="Like New">Like New</option>
+              <option value="Good">Good</option>
+              <option value="Used">Used</option>
+              <option value="New">New (Sealed)</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Quantity</label>
+            <input type="number" id="ap-qty" placeholder="1" value="1" min="1">
+          </div>
+        </div>
+        <div class="form-field"><label>Description</label><textarea id="ap-desc" placeholder="Describe the item — edition, condition details, any accessories included…" rows="3"></textarea></div>
+        <div class="form-row-2">
+          <div class="form-field">
+            <label>Image (emoji, URL, or upload)</label>
+            <input type="text" id="ap-img" placeholder="📚 or https://...">
+            <input type="file" id="ap-img-file" accept="image/*" onchange="previewImage()">
+            <div id="ap-img-preview" class="img-preview"></div>
+          </div>
+          <div class="form-field">
+            <label>Listing Duration</label>
+            <select id="ap-dur">
+              <option value="1">1 Day</option>
+              <option value="3" selected>3 Days</option>
+              <option value="7">7 Days</option>
+              <option value="14">2 Weeks</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="ap-ai-panel">
+        <div class="ai-panel-header">
+          <span class="ai-badge">🤖 AI Pricing Assistant</span>
+        </div>
+        <div id="ap-ai-content">
+          <div class="ai-empty-hint">Enter a price to see AI recommendations</div>
+        </div>
+      </div>
+    </div>
+    <div class="md-footer">
+      <button class="btn-ghost" onclick="closeMd('md-addproduct')">Cancel</button>
+      <button class="btn-primary" onclick="submitAddProduct()">List Product →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Buyer Offers Modal (Seller view) -->
+<div class="modal-backdrop" id="md-offers" onclick="closeMd('md-offers')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="md-close" onclick="closeMd('md-offers')">×</button>
+    <div class="md-header">
+      <h2 class="md-title" id="offers-title">Buyer Offers</h2>
+      <p class="md-sub">AI has ranked buyers by deal quality</p>
+    </div>
+    <div id="offers-body"></div>
+  </div>
+</div>
+
+<script src="js/script.js"></script>
+</body>
+</html>
+
