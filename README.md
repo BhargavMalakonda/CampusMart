@@ -113,7 +113,7 @@ The server will not start without this file present.
 
 **Price guard** — A post-processing step in `agent.py` prevents the model from accidentally closing a deal below the buyer's own offer, which would be a logical contradiction.
 
-## Team
+## Team Members
 
 - **Malakonda Chaitanya Bhargav** - Backend Developement and Integration ([GitHub](https://github.com/BhargavMalakonda) | [LinkedIn](https://www.linkedin.com/in/chaitanya-bhargav-malakonda/))
 - **Burle Tejash** - Frontend & UI/UX ([GitHub](https://github.com/Tejash1002) | [LinkedIn](https://www.linkedin.com/in/burle-tejash))
