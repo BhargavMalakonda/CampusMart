@@ -1,7 +1,7 @@
 # CampusMart — Autonomous AI Negotiator
 
 > An AI-powered campus marketplace where a local LLM haggles on the seller's behalf in real time — no seller required in the loop.
-> **Built in 24 hours for the [StudAI One] Hackathon!**
+> **Built in 24 hours for the StudAI One Hackathon!**
 
 ---
 
